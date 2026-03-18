@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "iGenius Memory — Always-on desktop companion"
 authors = ["iGenius Memory"]
 license = "MIT"
-repository = "https://github.com/igenius-memory/igenius-desktop"
+repository = "https://github.com/vehoelite/igenius-desktop"
 edition = "2021"
 rust-version = "1.77.2"
 
