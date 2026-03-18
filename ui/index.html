@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iGenius Memory</title>
+<link rel="stylesheet" href="sidebar.css">
+<link rel="stylesheet" href="desktop.css">
+</head>
+<body>
+
+<div class="loading-bar" id="loading"></div>
+
+<!-- No API key state -->
+<div id="no-key">
+  <div class="no-key-state">
+    <div class="emoji">🔑</div>
+    <h3>Connect Your Memory</h3>
+    <p>Enter your iGenius API key to get started.</p>
+    <div class="setup-form">
+      <input type="text" id="setup-url" placeholder="API URL (default: https://igenius-memory.online/v1)" />
+      <input type="password" id="setup-key" placeholder="Your API Key (ig_...)" />
+      <input type="text" id="setup-project" placeholder="Project name (e.g. my-app)" />
+      <button id="btn-connect">Connect</button>
+      <button class="ghost-btn" id="btn-get-key">Get Free Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main UI (hidden until API key is set) -->
+<div id="main" style="display:none;">
+  <div class="header">
+    <span class="logo">🧠</span>
+    <h2>iGenius Memory</h2>
+    <div class="header-actions">
+      <button class="icon-btn" id="btn-refresh" title="Refresh">↻</button>
+      <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="stats-bar">
+    <span id="stat-total">—</span>
+    <span id="stat-persistent">P: —</span>
+    <span id="stat-long">LT: —</span>
+    <span id="stat-short">ST: —</span>
+  </div>
+
+  <div class="project-bar" id="project-bar" title="Click to change active project">
+    <span class="project-icon">📁</span>
+    <span class="project-name" id="project-name">No project</span>
+    <span class="project-edit">✎</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="long_term">Long-term<span class="count" id="count-lt">0</span></button>
+    <button class="tab" data-tab="short_term">Short-term<span class="count" id="count-st">0</span></button>
+    <button class="tab" data-tab="pinned">📌 Pins<span class="count" id="count-pin">0</span></button>
+    <button class="tab" data-tab="briefing">Briefing</button>
+    <button class="tab" data-tab="search">Search</button>
+  </div>
+
+  <!-- Long-term panel (hero) -->
+  <div class="panel active" id="panel-long_term">
+    <div id="lt-list"></div>
+    <div class="empty-state" id="lt-empty" style="display:none;">
+      <div class="emoji">📦</div>
+      <div>No long-term memories yet.<br>Promote short-term catches to build your knowledge base.</div>
+    </div>
+  </div>
+
+  <!-- Short-term panel -->
+  <div class="panel" id="panel-short_term">
+    <div id="st-list"></div>
+    <div class="empty-state" id="st-empty" style="display:none;">
+      <div class="emoji">🕐</div>
+      <div>No short-term memories.<br>They'll appear as your agent captures context.</div>
+    </div>
+  </div>
+
+  <!-- Pinned panel -->
+  <div class="panel" id="panel-pinned">
+    <div class="pin-form-section">
+      <div class="pin-form-header" id="btn-toggle-pin-form">
+        <span>➕ Add Pinned Fact</span>
+        <span id="pin-form-arrow">▸</span>
+      </div>
+      <div class="pin-form" id="pin-form" style="display:none;">
+        <input type="text" id="pin-title" placeholder="Title (e.g. Production DB Host)" />
+        <textarea id="pin-content" placeholder="Value or details (e.g. 192.168.1.100)" rows="3"></textarea>
+        <div class="pin-form-row">
+          <select id="pin-category">
+            <option value="credential">🔑 Credential</option>
+            <option value="server">🖥️ Server / IP</option>
+            <option value="api_key">🔐 API Key</option>
+            <option value="config">⚙️ Configuration</option>
+            <option value="identity">👤 Identity</option>
+            <option value="url">🔗 URL / Endpoint</option>
+            <option value="note" selected>📝 Note</option>
+          </select>
+          <input type="text" id="pin-project" placeholder="Project (optional)" />
+        </div>
+        <div class="pin-form-actions">
+          <button class="pin-save-btn" id="btn-save-pin">📌 Pin It</button>
+          <button class="pin-cancel-btn" id="btn-cancel-pin">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div id="pin-list"></div>
+    <div class="empty-state" id="pin-empty" style="display:none;">
+      <div class="emoji">📌</div>
+      <div>No pinned facts yet.<br>Pin server IPs, credentials, API keys, and other key details that persist across sessions.</div>
+    </div>
+  </div>
+
+  <!-- Briefing panel -->
+  <div class="panel" id="panel-briefing">
+    <div style="padding: 8px 14px;">
+      <button id="btn-briefing" style="
+        width:100%; padding:8px; border-radius:6px;
+        background: var(--btn-bg); color: var(--btn-fg);
+        border:none; cursor:pointer; font-weight:600; font-size:0.78rem;
+      ">Generate Briefing</button>
+    </div>
+    <div class="briefing-content" id="briefing-text">
+      <div class="empty-state">
+        <div class="emoji">📋</div>
+        <div>Click above to generate an intelligence briefing from all your memories.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search panel -->
+  <div class="panel" id="panel-search">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search memories…" />
+    </div>
+    <div id="search-results"></div>
+    <div class="empty-state" id="search-empty">
+      <div class="emoji">🔍</div>
+      <div>Type to search across all memory layers.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="settings-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Settings</h3>
+      <button class="icon-btn" id="btn-close-settings">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>API URL</label>
+      <input type="text" id="settings-url" />
+      <label>API Key</label>
+      <input type="password" id="settings-key" />
+      <label>Active Project</label>
+      <input type="text" id="settings-project" placeholder="Project name for memory isolation" />
+      <p class="settings-hint">Each project gets its own memory space. Leave empty for global scope.</p>
+
+      <div class="settings-divider"></div>
+      <label>AI Provider (Memory Processing)</label>
+      <select id="settings-provider">
+        <option value="lmstudio">LM Studio (local)</option>
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic</option>
+        <option value="google">Google Gemini</option>
+      </select>
+      <p class="settings-hint">Which AI processes your memories (classification, briefings, extraction).</p>
+
+      <div id="provider-lmstudio-fields">
+        <label>LM Studio URL</label>
+        <input type="text" id="settings-lmstudio-url" placeholder="http://localhost:1234/v1" />
+        <label>Model</label>
+        <input type="text" id="settings-lmstudio-model" placeholder="local-model" />
+        <p class="settings-hint">The model identifier loaded in LM Studio.</p>
+      </div>
+
+      <div id="provider-openai-fields" style="display:none;">
+        <label>OpenAI API Key</label>
+        <input type="password" id="settings-openai-key" placeholder="sk-..." />
+        <label>Model</label>
+        <select id="settings-openai-model">
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="gpt-4.1">GPT-4.1</option>
+          <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+          <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
+        </select>
+      </div>
+
+      <div id="provider-anthropic-fields" style="display:none;">
+        <label>Anthropic API Key</label>
+        <input type="password" id="settings-anthropic-key" placeholder="sk-ant-..." />
+        <label>Model</label>
+        <select id="settings-anthropic-model">
+          <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+          <option value="claude-haiku-4-20250514">Claude Haiku 4</option>
+          <option value="claude-opus-4-20250514">Claude Opus 4</option>
+        </select>
+      </div>
+
+      <div id="provider-google-fields" style="display:none;">
+        <label>Google AI API Key</label>
+        <input type="password" id="settings-google-key" placeholder="AI..." />
+        <label>Model</label>
+        <select id="settings-google-model">
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
+          <option value="gemini-2.5-pro-preview-05-06">Gemini 2.5 Pro</option>
+          <option value="gemini-2.5-flash-preview-04-17">Gemini 2.5 Flash</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button id="btn-save-settings">Save</button>
+        <button class="ghost-btn" id="btn-cancel-settings">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="error-toast" id="error-toast"></div>
+
+<!-- Context menu -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-menu-item" data-action="add-memory">➕ Add Memory</div>
+  <div class="ctx-menu-sep"></div>
+  <div class="ctx-menu-item" data-action="refresh">↻ Refresh</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

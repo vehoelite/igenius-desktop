@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Tauri build output
+src-tauri/target/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
