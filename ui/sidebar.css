@@ -230,6 +230,29 @@ body {
   font-size: 0.65rem; opacity: 0.6;
 }
 
+/* ── Project bar ────────────── */
+.project-bar {
+  padding: 5px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 0.72rem;
+}
+.project-bar:hover { background: var(--input-bg); }
+.project-bar .project-icon { font-size: 0.78rem; opacity: 0.8; }
+.project-bar .project-name {
+  flex: 1;
+  font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.project-bar .project-edit {
+  opacity: 0; font-size: 0.7rem; transition: opacity 0.15s;
+}
+.project-bar:hover .project-edit { opacity: 0.6; }
+.project-bar.scoped .project-name { color: var(--purple); }
+.project-bar.global .project-name { opacity: 0.5; font-style: italic; }
+
 /* ── Visual tools panel ─────── */
 .visual-section { padding: 14px; }
 .visual-section h3 {
